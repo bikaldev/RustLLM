@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "binary",
+    "llm_core",
+    "groq"
+]
