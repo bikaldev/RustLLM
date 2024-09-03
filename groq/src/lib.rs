@@ -1,10 +1,13 @@
 use std::{error::Error as StdError, env};
-use chat_config::{GroqChatOptions, GroqModelType};
-use chat_completion::ChatCompletion;
-use llm_core::{message::{Message, Role}, model::Model};
+use chat_completion::Choice;
+use llm_core::message::Message;
 
 pub mod chat_config;
 pub mod chat_completion;
+
+pub use chat_config::{GroqChatOptions, GroqModelType};
+pub use chat_completion::ChatCompletion;
+pub use llm_core::model::Model;
 
 pub struct GroqModel {
     pub model: GroqModelType,
@@ -52,15 +55,16 @@ impl Model for GroqModel {
         
         // let mut result = String::new();
         // let result = response.read_to_string(&mut result);
-        let result: ChatCompletion = response.json().unwrap();
+        let mut result: ChatCompletion = response.json()?;
+        let choice = result.choices.pop().unwrap_or_else(
+            || Choice::empty());
+        
+        let assistant_message = choice.message;
 
-        println!("The string object is: {:?}", result);
+        self.chat_options.messages.push(assistant_message.clone());
 
-        Ok(Message::new("Hello".to_string(), Role::Assistant))
+        Ok(assistant_message)
 
-
-        // send the request
-        // get a response back
     }
 }
 
@@ -68,11 +72,13 @@ impl Model for GroqModel {
 pub mod tests {
 
     use super::*;
+    use llm_core::message::Role;
 
     #[test]
     fn test_model_invoke() {
         let mut model = GroqModel::build(GroqModelType::Llama3_8b8192).unwrap();
         let message = Message::new("Hello, how are you doing?".to_string(), Role::User);
-        let _ = model.invoke(message);
+        let response = model.invoke(message).unwrap();
+        println!("The returned message is: {:?}", response);
     }
 }

@@ -1,8 +1,6 @@
-use std::fmt::Error;
-use std::str::FromStr;
-
 use serde;
 use serde::{Serialize, Deserialize};
+use serde::{de,de::Unexpected};
 use llm_core::message::Message;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -80,7 +78,7 @@ impl GroqChatOptions {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum GroqModelType {
     Llama3_70b8192,
     Llama3_8b8192
@@ -95,22 +93,24 @@ impl ToString for GroqModelType {
     }
 }
 
-impl FromStr for GroqModelType {
-    type Err = std::fmt::Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "llama3-8b-8192" => Ok(GroqModelType::Llama3_8b8192),
-            "llama3-70b-8192" => Ok(GroqModelType::Llama3_70b8192),
-            _ => Err(Error)
-        }
-    }
-}
-
 impl Serialize for GroqModelType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer {
         S::serialize_str(serializer, &self.to_string()[..])
+    }
+}
+
+impl<'de> Deserialize<'de> for GroqModelType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de> {
+        let s = String::deserialize(deserializer)?;
+        match &s[..] {
+            "llama3-8b-8192" => Ok(GroqModelType::Llama3_8b8192),
+            "llama3-70b-8192" => Ok(GroqModelType::Llama3_70b8192),
+            _ => Err(de::Error::invalid_value(Unexpected::Str(&s), &"a valid custom string"))
+        }
     }
 }
 

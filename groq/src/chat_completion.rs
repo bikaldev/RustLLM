@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use llm_core::message::Message;
+use llm_core::message::{Message, Role};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ChatCompletion {
@@ -18,6 +18,18 @@ pub struct Choice {
     pub message: Message,
     pub finish_reason: String,
     pub logprobs: Option<LogProbs>,
+}
+
+impl Choice {
+    pub fn empty() -> Choice {
+        Choice 
+        { 
+            index: 0, 
+            message: Message::new("".to_string(), Role::Assistant),
+            finish_reason: "No Result Returned".to_string(),
+            logprobs: None
+        }
+    }
 }
 
 

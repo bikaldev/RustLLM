@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize};
+use serde::{de, de::Unexpected};
 
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub enum Role {
     System,
     User,
@@ -26,10 +27,24 @@ impl Serialize for Role {
     }
 }
 
+impl<'de> Deserialize<'de> for Role {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de> {
+        let s = String::deserialize(deserializer)?;
+        match &s[..] {
+            "user" => Ok(Role::User),
+            "assistant" => Ok(Role::Assistant),
+            "system" => Ok(Role::System),
+            _ => Err(de::Error::invalid_value(Unexpected::Str(&s), &"a valid custom string"))
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
-    content: String,
-    role: Role
+    pub content: String,
+    pub role: Role
 }
 
 impl Message {
