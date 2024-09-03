@@ -1,6 +1,8 @@
 [workspace]
+resolver = "2"
 
 members = [
     "llm_core",
-    "groq"
+    "groq",
+    "cli_chatbot"
 ]
