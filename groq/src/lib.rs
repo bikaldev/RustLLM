@@ -1,6 +1,5 @@
 use std::{error::Error as StdError, env};
 use chat_completion::Choice;
-use llm_core::message::Message;
 
 pub mod chat_config;
 pub mod chat_completion;
@@ -8,6 +7,7 @@ pub mod chat_completion;
 pub use chat_config::{GroqChatOptions, GroqModelType};
 pub use chat_completion::ChatCompletion;
 pub use llm_core::model::Model;
+pub use llm_core::message::{Message, Role};
 
 pub struct GroqModel {
     pub model: GroqModelType,
